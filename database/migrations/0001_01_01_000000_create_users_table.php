@@ -16,7 +16,17 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->enum('role', ['user', 'admin'])->default('user');
+            $table->string('phone', 12)->nullable();
+            $table->string('address')->nullable();
+            $table->decimal('balance', 15, 2)->default(0);
+            $table->string('password')->nullable();
+            $table->string('google_id')->nullable();
+            $table->text('google_token')->nullable();
+            $table->text('google_refresh_token')->nullable();
+            $table->string('facebook_id')->nullable();
+            $table->text('facebook_token')->nullable();
+            $table->text('facebook_refresh_token')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

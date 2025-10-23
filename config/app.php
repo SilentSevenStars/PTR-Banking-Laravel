@@ -1,5 +1,8 @@
 <?php
 
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\SocialiteServiceProvider;
+
 return [
 
     /*
