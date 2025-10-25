@@ -56,11 +56,9 @@
             </thead>
             <tbody id="tBodyTransaction"></tbody>
         </table>
-        <div id="paginationLinks" class="mt-4"></div>
+        <div id="paginationLinks" class="my-4"></div>
     </div>
 </main>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script type="module">
     window.downloadReceipt = function(id) {
@@ -86,12 +84,37 @@
             }
         });
     }
+
     $(document).ready(function() {
         loadTransactions();
 
         $('#filterForm').on('submit', function(e) {
             e.preventDefault();
             loadTransactions();
+        });
+
+        $('#resetBtn').on('click', function() {
+            $('#type').val('');
+            $('#status').val('');
+            $('#from').val('');
+            $('#to').val('');
+            loadTransactions();
+        });
+
+        $('#exportBtn').on('click', function() {
+            let type = $('#type').val();
+            let status = $('#status').val();
+            let from_date = $('#from').val();
+            let to_date = $('#to').val();
+
+            const params = $.param({
+                type: type || '',
+                status: status || '',
+                from_date: from_date || '',
+                to_date: to_date || ''
+            });
+
+            window.location.href = '/transactions/export' + (params ? ('?' + params) : '');
         });
     });
 
@@ -104,14 +127,10 @@
         $.ajax({
             url: `/transactions/fetch?page=${page}`,
             type: 'GET',
-            data: {
-                type,
-                status,
-                from_date,
-                to_date
-            },
+            data: { type, status, from_date, to_date },
             success: function(response) {
                 let rows = '';
+
                 if (response.data.length > 0) {
                     response.data.forEach(function(txn) {
                         let typeDisplay = txn.type.charAt(0).toUpperCase() + txn.type.slice(1);
@@ -140,21 +159,20 @@
 
                 $('#tBodyTransaction').html(rows);
 
-                // ✅ Pagination buttons
                 let pagination = '';
                 if (response.last_page > 1) {
                     pagination += `<div class="flex justify-center mt-4 space-x-2">`;
 
                     if (response.prev_page_url) {
-                        pagination += `<button class="px-3 py-1 bg-gray-200 rounded" onclick="loadTransactions(${response.current_page - 1})">Prev</button>`;
+                        pagination += `<button data-page="${response.current_page - 1}" class="px-3 py-1 bg-gray-200 rounded pagination-btn">Prev</button>`;
                     }
 
                     for (let i = 1; i <= response.last_page; i++) {
-                        pagination += `<button class="px-3 py-1 ${i === response.current_page ? 'bg-blue-600 text-white' : 'bg-gray-200'} rounded" onclick="loadTransactions(${i})">${i}</button>`;
+                        pagination += `<button data-page="${i}" class="px-3 py-1 ${i === response.current_page ? 'bg-blue-600 text-white' : 'bg-gray-200'} rounded pagination-btn">${i}</button>`;
                     }
 
                     if (response.next_page_url) {
-                        pagination += `<button class="px-3 py-1 bg-gray-200 rounded" onclick="loadTransactions(${response.current_page + 1})">Next</button>`;
+                        pagination += `<button data-page="${response.current_page + 1}" class="px-3 py-1 bg-gray-200 rounded pagination-btn">Next</button>`;
                     }
 
                     pagination += `</div>`;
@@ -168,10 +186,10 @@
         });
     }
 
-    $('#exportBtn').on('click', function() {
-        window.location.href = '/transactions/export';
+    $(document).off('click', '.pagination-btn').on('click', '.pagination-btn', function() {
+        const page = $(this).data('page');
+        loadTransactions(page);
     });
-
 </script>
 
 @endsection

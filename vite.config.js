@@ -13,4 +13,15 @@ export default defineConfig({
             '$': 'jQuery'
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['jquery', 'alpinejs', 'flowbite', 'chart.js'],
+                    fontawesome: ['@fortawesome/fontawesome-free'],
+                },
+            },
+        },
+        chunkSizeWarningLimit: 1000,
+    },
 });

@@ -6,6 +6,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportAnalysisController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\Socialite\ProviderCallbackController;
 use App\Http\Controllers\Socialite\ProviderRedirectController;
 use App\Http\Controllers\SocialiteController;
@@ -21,6 +22,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings');
+    Route::post('/settings/email', [SettingController::class, 'changeEmail']);
+    Route::post('/settings/password', [SettingController::class, 'changePassword']);
+    Route::post('/settings/disconnect/{provider}', [SettingController::class, 'disconnect']);
 });
 
 Route::middleware(['auth', 'admin'])->group(function(){

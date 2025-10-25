@@ -21,7 +21,7 @@ class TransactionController extends Controller
     {
         $validate = Validator::make($request->all(), [
             'amount' => ['required', 'numeric', 'min:1'],
-            'balance' => ['required', 'numeric', 'min:0'], 
+            'balance' => ['required', 'numeric', 'min:0'],
         ]);
 
         if ($validate->fails()) {
@@ -67,16 +67,30 @@ class TransactionController extends Controller
             $query->whereBetween(DB::raw('DATE(created_at)'), [$request->from_date, $request->to_date]);
         }
 
-        $transactions = $query->orderBy('created_at', 'desc')->paginate(10);
+        $transactions = $query->orderBy('created_at', 'desc')->paginate(10)->appends($request->all());
 
         return response()->json($transactions);
     }
 
+
     public function export(Request $request)
     {
         $userId = Auth::id();
-        $transactions = Transaction::where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
+
+        $query = Transaction::query()
+            ->where('user_id', $userId);
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('from_date') && $request->filled('to_date')) {
+            $query->whereBetween(DB::raw('DATE(created_at)'), [$request->from_date, $request->to_date]);
+        }
+
+        $transactions = $query->orderBy('created_at', 'desc')
             ->get(['id', 'type', 'amount', 'status', 'created_at']);
 
         $filename = "transactions_" . date('Ymd_His') . ".csv";
@@ -95,7 +109,7 @@ class TransactionController extends Controller
                     ucfirst($txn->type),
                     number_format($txn->amount, 2),
                     ucfirst($txn->status),
-                    $txn->created_at
+                    $txn->created_at->format('Y-m-d H:i:s'),
                 ]);
             }
             fclose($file);

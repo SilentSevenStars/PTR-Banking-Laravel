@@ -3,11 +3,11 @@
     <a href="/admin"><img src="{{ asset('image/sidebarLogo.png') }}" alt=""></a>
     <nav class="space-y-2">
       <a href="/profile" class="block px-4 py-2 rounded hover:bg-gray-700 
-        <?= basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'bg-gray-700' : '' ?>">
+        {{ request()->is('profile.edit') ? 'bg-gray-700' : '' }}">
         Profile
       </a>
       <a href="/admin" class="block px-4 py-2 rounded hover:bg-gray-700 
-        <?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'bg-gray-700' : '' ?>">
+        {{ request()->is('admin.dashboard') ? 'bg-gray-700' : '' }}">
         Dashboard
       </a>
       <a href="./transaction.php" class="block px-4 py-2 rounded hover:bg-gray-700 
@@ -19,11 +19,11 @@
         Report and Analysis
       </a>
       <a href="/admin/loan" class="block px-4 py-2 rounded hover:bg-gray-700 
-        <?= basename($_SERVER['PHP_SELF']) == 'loan.php' ? 'bg-gray-700' : '' ?>">
+        {{ request()->is('admin.loans') ? 'bg-gray-700' : '' }}">
         Loan
       </a>
-      <a href="./settings.php" class="block px-4 py-2 rounded hover:bg-gray-700 
-        <?= basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'bg-gray-700' : '' ?>">
+      <a href="/settings" class="block px-4 py-2 rounded hover:bg-gray-700 
+        {{ request()->is('settings') ? 'bg-gray-700' : '' }}">
         Settings
       </a>
     </nav>

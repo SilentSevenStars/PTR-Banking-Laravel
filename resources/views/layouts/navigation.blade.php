@@ -3,27 +3,27 @@
     <a href="/"><img src="{{ asset('image/sidebarLogo.png') }}" alt=""></a>
     <nav class="space-y-2">
       <a href="profile" class="block px-4 py-2 rounded hover:bg-gray-700 
-        <?= basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'bg-gray-700' : '' ?>">
+        {{ request()->is('profile') || request()->is('profile/*') ? 'bg-gray-700' : '' }}">
         Profile
       </a>
       <a href="/" class="block px-4 py-2 rounded hover:bg-gray-700 
-        <?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'bg-gray-700' : '' ?>">
+        {{  request()->is('/') || request()->is('dashboard') ? 'bg-gray-700' : '' }}">
         Dashboard
       </a>
       <a href="./transactions" class="block px-4 py-2 rounded hover:bg-gray-700 
-        <?= basename($_SERVER['PHP_SELF']) == 'transaction.php' ? 'bg-gray-700' : '' ?>">
+        {{ request()->is('transactions') || request()->is('transactions/*') ? 'bg-gray-700' : '' }}">
         Transaction
       </a>
       <a href="/report-analysis" class="block px-4 py-2 rounded hover:bg-gray-700 
-        <?= basename($_SERVER['PHP_SELF']) == 'report_analysis.php' ? 'bg-gray-700' : '' ?>">
+        {{ request()->is('report-analysis') || request()->is('report-analysis/*') ? 'bg-gray-700' : '' }}">
         Report and Analysis
       </a>
       <a href="/loan" class="block px-4 py-2 rounded hover:bg-gray-700 
-        <?= basename($_SERVER['PHP_SELF']) == 'loan.php' ? 'bg-gray-700' : '' ?>">
+        {{ request()->is('loan') || request()->is('loan/*') ? 'bg-gray-700' : '' }}">
         Loan
       </a>
-      <a href="./settings.php" class="block px-4 py-2 rounded hover:bg-gray-700 
-        <?= basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'bg-gray-700' : '' ?>">
+      <a href="/settings" class="block px-4 py-2 rounded hover:bg-gray-700 
+        {{ request()->is('settings') || request()->is('settings/*') ? 'bg-gray-700' : '' }}">
         Settings
       </a>
     </nav>
