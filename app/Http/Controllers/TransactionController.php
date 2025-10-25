@@ -21,7 +21,7 @@ class TransactionController extends Controller
     {
         $validate = Validator::make($request->all(), [
             'amount' => ['required', 'numeric', 'min:1'],
-            'balance' => ['required', 'numeric', 'min:1'],
+            'balance' => ['required', 'numeric', 'min:0'], 
         ]);
 
         if ($validate->fails()) {
@@ -55,7 +55,6 @@ class TransactionController extends Controller
         $query = Transaction::query()
             ->where('user_id', Auth::id());
 
-        // Apply filters if provided
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }

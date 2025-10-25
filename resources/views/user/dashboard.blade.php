@@ -60,34 +60,113 @@
     </div>
 </main>
 
+<div id="transactionModal"
+    class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+    <div id="modalBox"
+        class="bg-white rounded-2xl shadow-2xl p-8 w-96 text-center transform scale-90 opacity-0 transition-all duration-300 ease-out">
+
+        <div id="modalIcon" class="flex items-center justify-center mb-6"></div>
+        <h2 id="modalTitle" class="text-2xl font-bold text-gray-800 mb-2"></h2>
+        <p id="modalMessage" class="text-gray-600 mb-6"></p>
+        <button id="modalCloseBtn"
+            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-500 transition-all duration-200">
+            OK
+        </button>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- <script src="asset('js/chart.js')"></script>  -->
 
 <script type="module">
     $(document).ready(function() {
         loadData()
         loadChart()
+        $('#modalCloseBtn').on('click', function () {
+            closeModal()
+        })
     })
+
+    function showModal(title, message, type = "info") {
+        let iconHtml = "";
+
+        if (type === "success") {
+            iconHtml = `
+            <div class="relative mx-auto flex items-center justify-center w-20 h-20">
+                <div class="absolute inset-0 rounded-full border-4 border-green-500 animate-pulse"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                    class="w-12 h-12 text-green-600 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+        `;
+        } else if (type === "error") {
+            iconHtml = `
+            <div class="relative mx-auto flex items-center justify-center w-20 h-20">
+                <div class="absolute inset-0 rounded-full border-4 border-red-500 animate-pulse"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                    class="w-12 h-12 text-red-600 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
+        `;
+        } else {
+            iconHtml = `
+            <div class="relative mx-auto flex items-center justify-center w-20 h-20">
+                <div class="absolute inset-0 rounded-full border-4 border-blue-500 animate-pulse"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                    class="w-12 h-12 text-blue-600 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
+                </svg>
+            </div>
+        `;
+        }
+
+        $("#modalIcon").html(iconHtml);
+        $("#modalTitle").text(title);
+        $("#modalMessage").text(message);
+
+        $("#transactionModal").removeClass("hidden");
+        setTimeout(() => {
+            $("#modalBox")
+                .removeClass("scale-90 opacity-0")
+                .addClass("scale-100 opacity-100");
+        }, 50);
+    }
+
+    function closeModal() {
+        $("#modalBox")
+            .removeClass("scale-100 opacity-100")
+            .addClass("scale-90 opacity-0");
+        setTimeout(() => {
+            $("#transactionModal").addClass("hidden");
+        }, 200);
+    }
 
     function loadData() {
         $.ajax({
-            url: "/dashboard",
+            url: "/",
             type: "GET",
             dataType: 'json',
-            success: function(response) {
-                let tBody = ""
+            success: function (response) {
+                let tBody = "";
+
+                const user = response.auth ? response.auth[0] : {};
+                $("#balance").val(user.balance ?? 0);
+                $("#balanceText").text(`₱${parseFloat(user.balance ?? 0).toFixed(2)}`);
 
                 if (response.recent && response.recent.length > 0) {
-                    response.recent.forEach(function(data) {
+                    response.recent.forEach(function (data) {
                         let typeDisplay = data.type.split(" ")
                             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                             .join(" ");
 
-                        let amount = parseFloat(data.amount)
-                        let isDeduction = (data.type === "withdraw" || data.type === "loan repayment")
-                        let sign = isDeduction ? '-' : '+'
-                        let amountDisplay = amount.toFixed(2)
-                        let amountColor = isDeduction ? 'text-red-500' : 'text-green-500'
-                        let statusColor = data.status.toLowerCase() === 'success' ? 'text-green-500' : 'text-red-500'
+                        let amount = parseFloat(data.amount);
+                        let isDeduction = (data.type === "withdraw" || data.type === "loan repayment");
+                        let sign = isDeduction ? '-' : '+';
+                        let amountDisplay = amount.toFixed(2);
+                        let amountColor = isDeduction ? 'text-red-500' : 'text-green-500';
+                        let statusColor = data.status.toLowerCase() === 'success' ? 'text-green-500' : 'text-red-500';
 
                         tBody += `
                             <tr class="border-b hover:bg-gray-100">
@@ -98,8 +177,8 @@
                                 </td>
                                 <td class="py-3 px-6">${data.date}</td>
                             </tr>
-                        `
-                    })
+                        `;
+                    });
                 } else {
                     tBody += `
                         <tr class="border-b hover:bg-gray-100 text-center">
@@ -110,118 +189,79 @@
 
                 $("#tBodyTransaction").html(tBody);
             },
-            error: function(err) {
+            error: function (err) {
                 console.error("AJAX error:", err);
             }
-        })
+        });
     }
 
     function submitTransaction(transactionType) {
-        let amount = $('#amountInput').val()
-        let balance = $('#quickTransactionForm #balance').val()
-        amount = parseFloat(amount)
-        balance = parseFloat(balance)
-        if (transactionType === 'deposit') {
-            if (amount > 0) {
-                balance = balance + amount;
-                $.ajax({
-                    url: "/dashboard",
-                    method: "POST",
-                    data: {
-                        'type': transactionType,
-                        'amount': amount,
-                        'status': 'success',
-                        'balance': balance,
-                        _token: $("meta[name='csrf-token']").attr("content"),
-                    },
-                    success: function(response) {
-                        if (response.errors) {
-                            alert("Error")
-                        } else {
-                            alert('Success')
-                            loadData()
-                            $('#amountInput').val('')
-                        }
-                    },
-                    error: function() {
+        let amount = parseFloat($('#amountInput').val() || 0);
+        let balance = parseFloat($('#quickTransactionForm #balance').val() || 0);
 
-                    }
-                });
-            } else {
-                alert("Invalid amount, must be greater than zero");
-            }
+        if (isNaN(amount) || amount <= 0) {
+            showModal("Invalid Amount", "Please enter an amount greater than zero.", "error");
+            return;
         }
-        if (transactionType === 'withdraw') {
-            if (balance > amount && amount > 0) {
-                balance -= amount;
-                $.ajax({
-                    url: "/dashboard",
-                    method: "POST",
-                    data: {
-                        'type': transactionType,
-                        'amount': amount,
-                        'status': 'success',
-                        'balance': balance,
-                        _token: $("meta[name='csrf-token']").attr("content"),
-                    },
-                    success: function(response) {
-                        if (response.errors) {
-                            alert("Error")
-                        } else {
-                            alert('Success')
-                            loadData()
-                            $('#amountInput').val('')
-                        }
-                    },
-                    error: function() {
 
-                    }
-                });
-            } else {
-                alert("Invalid amount, must be greater than zero");
-            }
+        if (transactionType === 'withdraw' && amount > balance) {
+            showModal("Insufficient Balance", "You do not have enough funds to withdraw this amount.", "error");
+            return;
         }
+
+        let newBalance = balance;
+        if (transactionType === 'deposit') newBalance += amount;
+        else if (transactionType === 'withdraw') newBalance -= amount;
+
+        $.ajax({
+            url: "/transaction/create",
+            method: "POST",
+            data: {
+                'type': transactionType,
+                'amount': amount,
+                'status': 'success',
+                'balance': newBalance,
+                _token: $("meta[name='csrf-token']").attr("content"),
+            },
+            success: function (response) {
+                if (response.errors) {
+                    let messages = Object.values(response.errors).flat().join("<br>");
+                    showModal("Transaction Failed", messages, "error");
+                } else {
+                    const actionWord = transactionType === 'deposit' ? 'deposited' : 'withdrawn';
+                    showModal("Transaction Successful", `₱${amount.toFixed(2)} has been ${actionWord} successfully.`, "success");
+                    loadData();
+                    $('#amountInput').val('');
+                }
+            },
+            error: function () {
+                showModal("Error", "An error occurred while processing your transaction.", "error");
+            }
+        });
     }
 
     function loadChart() {
         $.ajax({
-            url: "/dashboard/chart",
+            url: "/user/chart",
             method: "GET",
             dataType: "json",
-            success: function(datas) {
-                if (!datas || datas.length === 0) return
+            success: function (datas) {
+                if (!datas || datas.length === 0) return;
 
-                let labels = datas.map(d => d.txn_date)
-                let deposits = datas.map(d => parseFloat(d.deposits))
-                let withdrawals = datas.map(d => parseFloat(d.withdrawals))
-                let repayments = datas.map(d => parseFloat(d.loan_repayments))
+                let labels = datas.map(d => d.txn_date);
+                let deposits = datas.map(d => parseFloat(d.deposits));
+                let withdrawals = datas.map(d => parseFloat(d.withdrawals));
+                let repayments = datas.map(d => parseFloat(d.loan_repayments));
 
-                const ctx = document.getElementById('financeChart').getContext('2d')
+                const ctx = document.getElementById('financeChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels,
-                        datasets: [{
-                                label: 'Deposits',
-                                data: deposits,
-                                borderColor: 'green',
-                                fill: false,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Withdrawals',
-                                data: withdrawals,
-                                borderColor: 'red',
-                                fill: false,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Loan Repayments',
-                                data: repayments,
-                                borderColor: 'blue',
-                                fill: false,
-                                tension: 0.3
-                            }
+                        datasets: [
+                            { label: 'Deposits', data: deposits, borderColor: 'green', fill: false, tension: 0.3 },
+                            { label: 'Withdrawals', data: withdrawals, borderColor: 'red', fill: false, tension: 0.3 },
+                            { label: 'Loan Repayments', data: repayments, borderColor: 'blue', fill: false, tension: 0.3 }
                         ]
                     },
                     options: {
@@ -231,7 +271,7 @@
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: function(value) {
+                                    callback: function (value) {
                                         return '₱' + value;
                                     }
                                 }
@@ -240,10 +280,10 @@
                     }
                 });
             },
-            error: function(err) {
-                console.error("Chart load error:", err)
+            error: function (err) {
+                console.error("Chart load error:", err);
             }
-        })
+        });
     }
 
     window.submitTransaction = submitTransaction;

@@ -1,12 +1,12 @@
 <aside class="w-64 bg-gray-900 text-white flex flex-col justify-between p-5 min-h-screen">
   <div>
-    <a href="index.php"><img src="{{ asset('image/sidebarLogo.png') }}" alt=""></a>
+    <a href="/admin"><img src="{{ asset('image/sidebarLogo.png') }}" alt=""></a>
     <nav class="space-y-2">
-      <a href="./profile.php" class="block px-4 py-2 rounded hover:bg-gray-700 
+      <a href="/profile" class="block px-4 py-2 rounded hover:bg-gray-700 
         <?= basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'bg-gray-700' : '' ?>">
         Profile
       </a>
-      <a href="./index.php" class="block px-4 py-2 rounded hover:bg-gray-700 
+      <a href="/admin" class="block px-4 py-2 rounded hover:bg-gray-700 
         <?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'bg-gray-700' : '' ?>">
         Dashboard
       </a>
