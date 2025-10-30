@@ -79,10 +79,11 @@
 <!-- <script src="asset('js/chart.js')"></script>  -->
 
 <script type="module">
+    let financeChart = null;
     $(document).ready(function() {
         loadData()
         loadChart()
-        $('#modalCloseBtn').on('click', function () {
+        $('#modalCloseBtn').on('click', function() {
             closeModal()
         })
     })
@@ -148,7 +149,7 @@
             url: "/",
             type: "GET",
             dataType: 'json',
-            success: function (response) {
+            success: function(response) {
                 let tBody = "";
 
                 const user = response.auth ? response.auth[0] : {};
@@ -156,7 +157,7 @@
                 $("#balanceText").text(`₱${parseFloat(user.balance ?? 0).toFixed(2)}`);
 
                 if (response.recent && response.recent.length > 0) {
-                    response.recent.forEach(function (data) {
+                    response.recent.forEach(function(data) {
                         let typeDisplay = data.type.split(" ")
                             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                             .join(" ");
@@ -175,7 +176,7 @@
                                 <td class="py-3 px-6 ${statusColor} font-semibold">
                                     ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}
                                 </td>
-                                <td class="py-3 px-6">${data.date}</td>
+                                <td class="py-3 px-6">${formatDate(data.date)}</td>
                             </tr>
                         `;
                     });
@@ -189,7 +190,7 @@
 
                 $("#tBodyTransaction").html(tBody);
             },
-            error: function (err) {
+            error: function(err) {
                 console.error("AJAX error:", err);
             }
         });
@@ -223,7 +224,7 @@
                 'balance': newBalance,
                 _token: $("meta[name='csrf-token']").attr("content"),
             },
-            success: function (response) {
+            success: function(response) {
                 if (response.errors) {
                     let messages = Object.values(response.errors).flat().join("<br>");
                     showModal("Transaction Failed", messages, "error");
@@ -231,10 +232,11 @@
                     const actionWord = transactionType === 'deposit' ? 'deposited' : 'withdrawn';
                     showModal("Transaction Successful", `₱${amount.toFixed(2)} has been ${actionWord} successfully.`, "success");
                     loadData();
+                    loadChart();
                     $('#amountInput').val('');
                 }
             },
-            error: function () {
+            error: function() {
                 showModal("Error", "An error occurred while processing your transaction.", "error");
             }
         });
@@ -245,7 +247,7 @@
             url: "/user/chart",
             method: "GET",
             dataType: "json",
-            success: function (datas) {
+            success: function(datas) {
                 if (!datas || datas.length === 0) return;
 
                 let labels = datas.map(d => d.txn_date);
@@ -254,14 +256,37 @@
                 let repayments = datas.map(d => parseFloat(d.loan_repayments));
 
                 const ctx = document.getElementById('financeChart').getContext('2d');
-                new Chart(ctx, {
+
+                // ✅ Destroy old chart before rendering new one
+                if (financeChart !== null) {
+                    financeChart.destroy();
+                }
+
+                financeChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels,
-                        datasets: [
-                            { label: 'Deposits', data: deposits, borderColor: 'green', fill: false, tension: 0.3 },
-                            { label: 'Withdrawals', data: withdrawals, borderColor: 'red', fill: false, tension: 0.3 },
-                            { label: 'Loan Repayments', data: repayments, borderColor: 'blue', fill: false, tension: 0.3 }
+                        datasets: [{
+                                label: 'Deposits',
+                                data: deposits,
+                                borderColor: 'green',
+                                fill: false,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Withdrawals',
+                                data: withdrawals,
+                                borderColor: 'red',
+                                fill: false,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Loan Repayments',
+                                data: repayments,
+                                borderColor: 'blue',
+                                fill: false,
+                                tension: 0.3
+                            }
                         ]
                     },
                     options: {
@@ -271,7 +296,7 @@
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: function (value) {
+                                    callback: function(value) {
                                         return '₱' + value;
                                     }
                                 }
@@ -280,10 +305,21 @@
                     }
                 });
             },
-            error: function (err) {
+            error: function(err) {
                 console.error("Chart load error:", err);
             }
         });
+    }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        if (isNaN(date)) return dateString; 
+
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const year = date.getFullYear();
+
+        return `${month}/${day}/${year}`;
     }
 
     window.submitTransaction = submitTransaction;
