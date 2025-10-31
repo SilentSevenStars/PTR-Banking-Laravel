@@ -21,7 +21,7 @@ class TransactionController extends Controller
     {
         $validate = Validator::make($request->all(), [
             'amount' => ['required', 'numeric', 'min:1'],
-            'balance' => ['required', 'numeric', 'min:0'],
+            'type' => ['required', 'in:deposit,withdraw,loan repayment'],
         ]);
 
         if ($validate->fails()) {
@@ -31,22 +31,35 @@ class TransactionController extends Controller
         DB::beginTransaction();
         try {
             $auth = Auth::user();
+            $user = User::find($auth->id);
 
+            $amount = floatval($request->amount);
+
+            // Calculate new balance
+            if ($request->type == 'deposit') {
+                $user->balance += $amount;
+            } elseif ($request->type == 'withdraw') {
+                if ($amount > $user->balance) {
+                    return response()->json(["errors" => ["balance" => ["Insufficient balance."]]]);
+                }
+                $user->balance -= $amount;
+            }
+
+            // Create transaction
             $transact = Transaction::create([
                 'user_id' => $auth->id,
                 'type' => $request->type,
-                'amount' => $request->amount,
-                'status' => $request->status,
+                'amount' => $amount,
+                'status' => 'success',
             ]);
 
-            $user = User::find($auth->id);
-            $user->balance = $request->balance;
             $user->save();
             DB::commit();
 
-            return response()->json(['success' => $transact]);
+            return response()->json(['success' => true]);
         } catch (Exception $e) {
             DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

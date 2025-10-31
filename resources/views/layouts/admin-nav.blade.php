@@ -18,7 +18,7 @@
         <?= basename($_SERVER['PHP_SELF']) == 'report_analysis.php' ? 'bg-gray-700' : '' ?>">
         Report and Analysis
       </a>
-      <a href="/admin/loan" class="block px-4 py-2 rounded hover:bg-gray-700 
+      <a href="/admin/loans" class="block px-4 py-2 rounded hover:bg-gray-700 
         {{ request()->is('admin.loans') ? 'bg-gray-700' : '' }}">
         Loan
       </a>

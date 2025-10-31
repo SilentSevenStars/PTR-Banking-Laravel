@@ -18,11 +18,13 @@ return new class extends Migration
             $table->string('purpose')->nullable();
             $table->integer('term')->default(0);
             $table->decimal('interest_rate', 5, 2)->default(5.00);
-            $table->decimal('remaining_balance', 12, 2)->default(0);
-            $table->integer('months_paid')->default(0);
-            $table->decimal('monthly_payment', 12, 2)->default(0);
-            $table->date('next_due_date')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected', 'paid'])->default('pending');
+            $table->decimal('monthly_payment', 12, 2);
+            $table->decimal('remaining_balance', 12, 2);
+            $table->date('next_due_date')->nullable();
+            $table->integer('months_paid')->nullable();
+            $table->integer('months_left')->nullable();
+            $table->decimal('principal_amount', 12, 2)->default(0.00);
             $table->timestamps();
         });
     }

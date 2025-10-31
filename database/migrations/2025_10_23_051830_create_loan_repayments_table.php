@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('loan_id')->constrained('loans')->onDelete('cascade');
             $table->decimal('amount', 10, 2);
             $table->timestamp('paid_at')->useCurrent();
+            $table->integer('installment_no');
             $table->timestamps();
         });
     }

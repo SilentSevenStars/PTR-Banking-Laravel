@@ -155,6 +155,9 @@
                 const user = response.auth ? response.auth[0] : {};
                 $("#balance").val(user.balance ?? 0);
                 $("#balanceText").text(`₱${parseFloat(user.balance ?? 0).toFixed(2)}`);
+                $("#activeLoans").text(user.activeLoans ?? 0);
+                $("#loanBalance").text(`₱${parseFloat(user.loanBalance ?? 0).toFixed(2)}`);
+                $("#savingsText").text(`₱${parseFloat(user.savings ?? 0).toFixed(2)}`);
 
                 if (response.recent && response.recent.length > 0) {
                     response.recent.forEach(function(data) {
@@ -176,7 +179,7 @@
                                 <td class="py-3 px-6 ${statusColor} font-semibold">
                                     ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}
                                 </td>
-                                <td class="py-3 px-6">${formatDate(data.date)}</td>
+                                <td class="py-3 px-6">${formatDate(data.created_at)}</td>
                             </tr>
                         `;
                     });
@@ -313,7 +316,7 @@
 
     function formatDate(dateString) {
         const date = new Date(dateString);
-        if (isNaN(date)) return dateString; 
+        if (isNaN(date)) return dateString;
 
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const day = date.getDate().toString().padStart(2, '0');

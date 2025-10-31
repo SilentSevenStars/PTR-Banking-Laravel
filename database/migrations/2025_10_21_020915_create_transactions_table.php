@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->enum('type', ['deposit', 'withdraw', 'loan repayment']);
+            $table->enum('type', ['deposit', 'withdraw', 'loan repayment', 'loan request']);
             $table->decimal('amount', 20, 2);
-            $table->enum('status', ['success', 'failed'])->default('failed');
-            $table->timestamp('date')->useCurrent();
+            $table->enum('status', ['success', 'pending' , 'failed'])->default('failed');
             $table->timestamps();
         });
     }
