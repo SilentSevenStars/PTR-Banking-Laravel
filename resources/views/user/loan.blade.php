@@ -128,12 +128,19 @@
                             </span>
                         </td>
                         <td class="px-3 py-2">
-                            <a href="{{ url('/loan/view') }}/${row.id}"
-                                class="px-3 py-1 rounded-lg text-white ${
-                                    row.status === 'approved' ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'
-                                }">
-                                ${row.status === 'approved' ? 'Pay' : 'View'}
-                            </a>
+                            ${
+                                row.status === 'approved'
+                                ? `<a href="{{ url('/loan/view') }}/${row.id}"
+                                    class="px-3 py-1 rounded-lg text-white bg-red-600 hover:bg-red-500">
+                                        Pay
+                                </a>`
+                                : row.status === 'paid'
+                                ? `<a href="{{ url('/loan/view') }}/${row.id}"
+                                    class="px-3 py-1 rounded-lg text-white bg-blue-600 hover:bg-blue-500">
+                                        View
+                                </a>`
+                                : `<span class="text-gray-400 text-sm">No actions</span>`
+                            }
                         </td>
                     </tr>`;
                 });

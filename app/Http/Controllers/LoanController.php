@@ -12,12 +12,28 @@ class LoanController extends Controller
 {
     public function index()
     {
-        return view('user.loan');
+        $hasApprovedApplication = DB::table('loan_applications')
+            ->where('user_id', Auth::id())
+            ->where('status', 'approved')
+            ->exists();
+
+        if ($hasApprovedApplication) {
+            return view('user.loan');
+        }
+
+        return redirect()->route('loan-application.create');
     }
 
     public function viewLoan($id)
     {
-        return view('user.loan-view', ['id' => $id]);
+        $hasApprovedApplication = DB::table('loan_applications')
+            ->where('user_id', Auth::id())
+            ->where('status', 'approved')
+            ->exists();
+        if ($hasApprovedApplication) {
+            return view('user.loan-view', ['id' => $id]);
+        }
+        return redirect()->route('loan-application.create');
     }
 
     public function getBalance(Request $request)
@@ -195,53 +211,6 @@ class LoanController extends Controller
         }
     }
 
-    public function depositLoanAmount($loanId)
-    {
-        $userId = Auth::id();
-
-        $loan = DB::table('loans')
-            ->where('id', $loanId)
-            ->where('user_id', $userId)
-            ->first();
-
-        if (!$loan) {
-            return response()->json(['success' => false, 'message' => 'Loan not found']);
-        }
-
-        if ($loan->status !== 'approved') {
-            return response()->json(['success' => false, 'message' => 'Loan not approved yet']);
-        }
-
-        if ($loan->is_disbursed ?? false) {
-            return response()->json(['success' => false, 'message' => 'Loan already deposited']);
-        }
-
-        DB::beginTransaction();
-        try {
-
-            DB::table('users')->where('id', $userId)->increment('balance', $loan->principal_amount);
-
-            DB::table('loans')->where('id', $loanId)->update([
-                'is_disbursed' => true,
-                'updated_at' => now()
-            ]);
-
-            DB::table('transactions')->insert([
-                'user_id' => $userId,
-                'type' => 'loan credit',
-                'amount' => $loan->principal_amount,
-                'status' => 'success',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            DB::commit();
-            return response()->json(['success' => true, 'message' => 'Loan deposited successfully']);
-        } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json(['success' => false, 'message' => 'Error depositing loan']);
-        }
-    }
     public function loanHistory(Request $request)
     {
         $request->validate([
@@ -274,4 +243,6 @@ class LoanController extends Controller
 
         return response()->json($history);
     }
+    
+    
 }

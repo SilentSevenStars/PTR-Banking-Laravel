@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\LoanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -31,17 +32,52 @@ class LoanAdminController extends Controller
     public function approve(Request $request)
     {
         $loan = DB::table('loans')->where('id', $request->loan_id)->first();
-        if (!$loan) return response()->json(['success' => false, 'message' => 'Loan not found']);
+        if (!$loan) {
+            return response()->json(['success' => false, 'message' => 'Loan not found']);
+        }
 
-        DB::table('loans')->where('id', $loan->id)->update([
-            'status' => 'approved',
-            'next_due_date' => now()->addMonth(),
-        ]);
+        // Determine loan amount to credit (principal = requested)
+        $amount = $loan->principal_amount > 0 ? $loan->principal_amount : $loan->amount;
 
-        app(\App\Http\Controllers\LoanController::class)->depositLoanAmount($loan->id);
+        DB::beginTransaction();
 
-        return response()->json(['success' => true]);
+        try {
+            DB::table('loans')->where('id', $loan->id)->update([
+                'status' => 'approved',
+                'next_due_date' => now()->addMonth(),
+                'updated_at' => now()
+            ]);
+
+            DB::table('users')->where('id', $loan->user_id)->increment('balance', $amount);
+
+            DB::table('transactions')
+                ->where('user_id', $loan->user_id)
+                ->where('type', 'loan request')
+                ->where('amount', $loan->amount)
+                ->whereNull('updated_at')
+                ->update(['status' => 'success', 'updated_at' => now()]);
+
+            DB::table('transactions')->insert([
+                'user_id' => $loan->user_id,
+                'type' => 'deposit', 
+                'amount' => $amount,
+                'status' => 'success',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error approving loan',
+                'error' => $e->getMessage()
+            ]);
+        }
     }
+
 
     public function reject(Request $request)
     {
@@ -49,7 +85,8 @@ class LoanAdminController extends Controller
         if (!$loan) return response()->json(['success' => false, 'message' => 'Loan not found']);
 
         DB::table('loans')->where('id', $request->loan_id)->update([
-            'status' => 'rejected'
+            'status' => 'rejected',
+            'next_due_date' => null,
         ]);
 
         DB::table('transactions')->insert([
@@ -62,6 +99,7 @@ class LoanAdminController extends Controller
 
         return response()->json(['success' => true]);
     }
+
     public function loanHistory(Request $requestequest)
     {
         $userId = Auth::user()->id;

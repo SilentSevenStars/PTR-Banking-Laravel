@@ -2,15 +2,15 @@
   <div>
     <a href="/"><img src="{{ asset('image/sidebarLogo.png') }}" alt=""></a>
     <nav class="space-y-2">
-      <a href="profile" class="block px-4 py-2 rounded hover:bg-gray-700 
-        {{ request()->is('profile') || request()->is('profile/*') ? 'bg-gray-700' : '' }}">
+      <a href="/account" class="block px-4 py-2 rounded hover:bg-gray-700 
+        {{ request()->is('account') || request()->is('account/*') ? 'bg-gray-700' : '' }}">
         Profile
       </a>
       <a href="/" class="block px-4 py-2 rounded hover:bg-gray-700 
         {{  request()->is('/') || request()->is('dashboard') ? 'bg-gray-700' : '' }}">
         Dashboard
       </a>
-      <a href="./transactions" class="block px-4 py-2 rounded hover:bg-gray-700 
+      <a href="/transactions" class="block px-4 py-2 rounded hover:bg-gray-700 
         {{ request()->is('transactions') || request()->is('transactions/*') ? 'bg-gray-700' : '' }}">
         Transaction
       </a>

@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminLoanApplicationController;
 use App\Http\Controllers\Admin\AdminLoanController;
 use App\Http\Controllers\Admin\LoanAdminController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\LoanApplicationController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
@@ -32,12 +35,16 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->group(function(){
-    Route::get('/admin/', [PageController::class, 'admin'])->name('admin.dashboard');
+    Route::get('/admin/', [AdminDashboardController::class, 'admin'])->name('admin.dashboard');
 
     Route::get('/admin/loans', [LoanAdminController::class, 'index'])->name('admin.loans');
     Route::post('/admin/loans/list', [LoanAdminController::class, 'list']);
     Route::post('/admin/loans/approve', [LoanAdminController::class, 'approve']);
     Route::post('/admin/loans/reject', [LoanAdminController::class, 'reject']);
+
+    Route::get('/admin/loan-applications', [AdminLoanApplicationController::class, 'index'])->name('loan-applications.index');
+    Route::get('/admin/loan-applications/{application}', [AdminLoanApplicationController::class, 'show'])->name('loan-applications.show');
+    Route::put('/admin/loan-applications/{application}/review', [AdminLoanApplicationController::class, 'review'])->name('loan-applications.review');
 });
 Route::middleware(['auth', 'user'])->group(function(){
     Route::get('/', [UserController::class, 'index'])->name('dashboard');
@@ -61,6 +68,13 @@ Route::middleware(['auth', 'user'])->group(function(){
     Route::post('/loan/pay', [LoanController::class, 'loanPay']);
     Route::post('/loan/deposit/{id}', [LoanController::class, 'depositLoanAmount'])->name('loan.deposit');
     Route::post('/loan/history', [LoanController::class, 'loanHistory']);
+    Route::get('/loan/application', [LoanApplicationController::class, 'index'])->name('loan-application');
+    Route::get('loan/application/create', [LoanApplicationController::class, 'create'])->name('loan-application.create');
+    Route::post('/loan/application', [LoanApplicationController::class, 'store'])->name('loan-application.store');
+    Route::get('/loan/application/{loanApplication}', [LoanApplicationController::class, 'show'])->name('loan-application.show');
+
+    Route::get('/account', [UserController::class, 'profile'])->name('user.account');
+    Route::put('/account', [UserController::class, 'updateProfile'])->name('user.update');
 });
 
 Route::get('/auth/{provider}/redirect', ProviderRedirectController::class)->name('auth.redirect');

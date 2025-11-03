@@ -64,4 +64,32 @@ class UserController extends Controller
 
         return response()->json($transactions);
     }
+
+    public function profile()
+    {
+        $user = Auth::user();
+        return view('user.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            DB::table('users')->where('id', Auth::id())->update([
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'updated_at' => now(),
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Profile updated']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Update failed']);
+        }
+    }
 }
