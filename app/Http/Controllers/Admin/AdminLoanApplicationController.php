@@ -37,7 +37,7 @@ class AdminLoanApplicationController extends Controller
             'reviewed_by' => Auth::user()->id,
         ]);
 
-        return redirect()->route('admin.loan-applications.index')
+        return redirect()->route('loan-applications.index')
             ->with('success', 'Loan application has been ' . $validated['status']);
     }
 }

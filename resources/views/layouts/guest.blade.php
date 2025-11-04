@@ -12,7 +12,10 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        @if(file_exists(public_path('build/manifest.json')))
+        || @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @endif
     </head>
     <body class="flex items-center justify-center min-h-screen bg-gray-100 font-sans">
         {{ $slot }}

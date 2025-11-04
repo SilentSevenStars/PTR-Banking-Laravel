@@ -85,7 +85,7 @@ class LoanApplicationController extends Controller
             'proof_of_billing_path' => $proofOfBillingPath,
         ]);
 
-        return redirect()->route('user.loan-applications.show', $loanApplication)
+        return redirect()->route('loan-applications.show', $loanApplication)
             ->with('success', 'Loan application submitted successfully.');
     }
 
