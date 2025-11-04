@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->group(function(){
-    Route::get('/admin/', [AdminDashboardController::class, 'admin'])->name('admin.dashboard');
+    Route::get('/admin', [AdminDashboardController::class, 'admin'])->name('admin.dashboard');
 
     Route::get('/admin/loans', [LoanAdminController::class, 'index'])->name('admin.loans');
     Route::post('/admin/loans/list', [LoanAdminController::class, 'list']);
