@@ -41,13 +41,51 @@
 
     <div class="bg-white rounded-xl shadow p-6 border">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-700">Overview</h3>
-            <span class="text-sm text-gray-500">Aggregated system stats</span>
+            <h3 class="text-lg font-semibold text-gray-700">Overview Chart</h3>
+            <span class="text-sm text-gray-500">System Statistics</span>
         </div>
-        <div class="h-40 flex items-center justify-center text-gray-400">
-            Chart placeholder
-        </div>
+
+        <canvas id="adminChart" height="120"></canvas>
     </div>
+
 </main>
+
+{{-- Chart.js --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('adminChart');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Users', 'Deposits', 'Withdrawals', 'Loan Balance'],
+            datasets: [{
+                label: 'System Statistics',
+                data: [
+                    {{ $totalUsers }},
+                    {{ $totalDeposits }},
+                    {{ $totalWithdrawals }},
+                    {{ $loanBalance }}
+                ],
+                borderWidth: 2,
+                backgroundColor: [
+                    '#4F46E5', // users
+                    '#16A34A', // deposits
+                    '#DC2626', // withdrawals
+                    '#6B7280'  // loan balance
+                ],
+                borderColor: '#000'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
 
 @endsection

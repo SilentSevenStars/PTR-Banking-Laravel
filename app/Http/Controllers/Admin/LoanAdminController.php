@@ -36,7 +36,6 @@ class LoanAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'Loan not found']);
         }
 
-        // Determine loan amount to credit (principal = requested)
         $amount = $loan->principal_amount > 0 ? $loan->principal_amount : $loan->amount;
 
         DB::beginTransaction();

@@ -14,7 +14,7 @@
         <!-- Scripts -->
         
         @if(file_exists(public_path('build/manifest.json')))
-        || @vite(['resources/css/app.css', 'resources/js/app.js'])
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
     </head>
     <body class="flex items-center justify-center min-h-screen bg-gray-100 font-sans">
